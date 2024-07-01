@@ -1,0 +1,4 @@
+inventory_file: "hosts.ini"
+ssh_user: "yourusername"
+ssh_key_path: "/path/to/your/private/key"
+run_locally: false
