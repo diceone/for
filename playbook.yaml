@@ -1,0 +1,9 @@
+- name: Apply webserver service
+  hosts: webservers
+  services:
+    - service: example_service
+
+- name: Apply dbserver service
+  hosts: dbservers
+  services:
+    - service: example_service
