@@ -1,0 +1,5 @@
+- name: Update package index
+  command: sudo apt-get update
+
+- name: Upgrade packages
+  command: sudo apt-get upgrade -y
