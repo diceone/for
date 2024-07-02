@@ -185,7 +185,7 @@ Example `services/example_service/tasks/main.yaml`:
 
 ### Prerequisites
 
-- Go 1.16 or later
+- Go 1.20 or later
 
 ### Building the Project
 
