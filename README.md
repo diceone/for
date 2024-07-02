@@ -1,6 +1,6 @@
 # for
 
-**for** is a command-line tool designed to automate the execution of shell commands and scripts across multiple remote servers, similar to Ansible, but with a focus on simplicity and use of Go.
+**for** is a command-line tool designed to automate the execution of shell commands and scripts across multiple remote servers, similar to Ansible, but with a focus on simplicity and the Go programming language.
 
 ## Features
 
@@ -17,11 +17,21 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/for.git
+   git clone https://github.com/diceone/for.git
    cd for
    ```
 
-2. Build the binary:
+2. Initialize the Go module (if not already initialized):
+   ```bash
+   go mod init github.com/yourusername/for
+   ```
+
+3. Download dependencies:
+   ```bash
+   go mod tidy
+   ```
+
+4. Build the binary:
    ```bash
    go build -o for ./cmd/for
    ```
@@ -45,56 +55,56 @@
 
 #### Running with a Configuration and Playbook File
 
-Create a configuration file `config.yaml`:
+1. Create a configuration file `config.yaml`:
 
-```yaml
-inventory_file: "hosts.ini"
-ssh_user: "yourusername"
-ssh_key_path: "/path/to/your/private/key"
-run_locally: false
-```
+   ```yaml
+   inventory_file: "hosts.ini"
+   ssh_user: "yourusername"
+   ssh_key_path: "/path/to/your/private/key"
+   run_locally: false
+   ```
 
-Create a playbook file `playbook.yaml`:
+2. Create a playbook file `playbook.yaml`:
 
-```yaml
-- name: Apply webserver service
-  hosts: webservers
-  services:
-    - service: example_service
+   ```yaml
+   - name: Apply webserver service
+     hosts: webservers
+     services:
+       - service: example_service
 
-- name: Apply dbserver service
-  hosts: dbservers
-  services:
-    - service: example_service
-```
+   - name: Apply dbserver service
+     hosts: dbservers
+     services:
+       - service: example_service
+   ```
 
-Create an inventory file `hosts.ini`:
+3. Create an inventory file `hosts.ini`:
 
-```ini
-[webservers]
-192.168.1.10
-192.168.1.11
+   ```ini
+   [webservers]
+   192.168.1.10
+   192.168.1.11
 
-[dbservers]
-192.168.1.20
-192.168.1.21
-```
+   [dbservers]
+   192.168.1.20
+   192.168.1.21
+   ```
 
-Create a service file `services/example_service/tasks/main.yaml`:
+4. Create a service file `services/example_service/tasks/main.yaml`:
 
-```yaml
-- name: Update package index
-  command: sudo apt-get update
+   ```yaml
+   - name: Update package index
+     command: sudo apt-get update
 
-- name: Upgrade packages
-  command: sudo apt-get upgrade -y
-```
+   - name: Upgrade packages
+     command: sudo apt-get upgrade -y
+   ```
 
-Run the tool with the configuration and playbook file:
+5. Run the tool with the configuration and playbook file:
 
-```bash
-./for -config config.yaml -playbook playbook.yaml
-```
+   ```bash
+   ./for -config config.yaml -playbook playbook.yaml
+   ```
 
 #### Running Locally with a Configuration File
 
@@ -190,13 +200,13 @@ Example `services/example_service/tasks/main.yaml`:
 
 ### Prerequisites
 
-- Go 1.16 or later
+- Go 1.20 or later
 
 ### Building the Project
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/for.git
+   git clone https://github.com/diceone/for.git
    cd for
    ```
 
@@ -217,7 +227,3 @@ Contributions are welcome! Please open an issue or submit a pull request on GitH
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Contact
-
-For any inquiries or issues, please contact [your.email@example.com](mailto:your.email@example.com).
-```
