@@ -184,3 +184,54 @@ func RunAdHocCommand(inv *inventory.Inventory, group, command, sshUser, sshKeyPa
         }
     }
 }
+
+func RunLocalAdHocCommand(command string) {
+    fmt.Printf("TASK [Local ad hoc command] ***********************************\n")
+    if utils.IsScript(command) {
+        err := runLocalScript(command)
+        if err != nil {
+            fmt.Printf("failed: %v\n", err)
+        } else {
+            fmt.Println("ok")
+        }
+    } else {
+        err := runLocalCommand(command)
+        if err != nil {
+            fmt.Printf("failed: %v\n", err)
+        } else {
+            fmt.Println("ok")
+        }
+    }
+}
+
+func RunLocalPlaybook(playbook Playbook) {
+    for _, play := range playbook {
+        fmt.Printf("PLAY [%s] **************************************************\n", play.Name)
+        for _, service := range play.Services {
+            tasks, err := LoadServiceTasks(service.ServiceName)
+            if err != nil {
+                fmt.Printf("Error loading service [%s]: %v\n", service.ServiceName, err)
+                continue
+            }
+
+            for _, task := range tasks {
+                fmt.Printf("TASK [%s]\n", task.Name)
+                if utils.IsScript(task.Command) {
+                    err := runLocalScript(task.Command)
+                    if err != nil {
+                        fmt.Printf("failed: %v\n", err)
+                    } else {
+                        fmt.Println("ok")
+                    }
+                } else {
+                    err := runLocalCommand(task.Command)
+                    if err != nil {
+                        fmt.Printf("failed: %v\n", err)
+                    } else {
+                        fmt.Println("ok")
+                    }
+                }
+            }
+        }
+    }
+}
