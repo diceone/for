@@ -1,6 +1,6 @@
 # for
 
-**for** is a command-line tool designed to automate the execution of shell commands and scripts across multiple remote servers, similar to Ansible, but with a focus on simplicity and the Go programming language.
+**for** is a command-line tool designed to automate the execution of shell commands and scripts across multiple remote servers, similar to Ansible, but with a focus on simplicity and use of Go.
 
 ## Features
 
@@ -23,7 +23,7 @@
 
 2. Initialize the Go module (if not already initialized):
    ```bash
-   go mod init github.com/yourusername/for
+   go mod init github.com/diceone/for
    ```
 
 3. Download dependencies:
@@ -59,7 +59,7 @@
 
    ```yaml
    inventory_file: "hosts.ini"
-   ssh_user: "yourusername"
+   ssh_user: "root"
    ssh_key_path: "/path/to/your/private/key"
    run_locally: false
    ```
@@ -128,13 +128,13 @@ Run the tool:
 Run an ad hoc task on the `webservers` group:
 
 ```bash
-./for -g webservers -t "uptime"
+./for -config config.yaml -g webservers -t "uptime" -local
 ```
 
-To run the ad hoc task locally:
+To run the ad hoc task remotely, without the `-local` flag:
 
 ```bash
-./for -g webservers -t "uptime" -local
+./for -config config.yaml -g webservers -t "uptime"
 ```
 
 #### Running Ad Hoc Scripts
@@ -142,13 +142,13 @@ To run the ad hoc task locally:
 Run a script on the `webservers` group:
 
 ```bash
-./for -g webservers -t "/path/to/script.sh"
+./for -config config.yaml -g webservers -t "/path/to/script.sh"
 ```
 
 To run the script locally:
 
 ```bash
-./for -g webservers -t "/path/to/script.sh" -local
+./for -config config.yaml -g webservers -t "/path/to/script.sh" -local
 ```
 
 ## Configuration File Structure
@@ -200,7 +200,7 @@ Example `services/example_service/tasks/main.yaml`:
 
 ### Prerequisites
 
-- Go 1.20 or later
+- Go 1.16 or later
 
 ### Building the Project
 
@@ -226,4 +226,3 @@ Contributions are welcome! Please open an issue or submit a pull request on GitH
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
