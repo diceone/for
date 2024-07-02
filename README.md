@@ -38,7 +38,7 @@
 
 ### Prerequisites
 
-- Go 1.16 or later
+- Go 1.20 or later
 
 ## Usage
 
