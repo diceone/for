@@ -44,14 +44,28 @@
 
 ### Command-Line Options
 
-- `-config string`: Path to the configuration file.
+- `-config string`: Path to the configuration file (default: `./config.yaml`).
 - `-playbook string`: Path to the playbook file.
 - `-help`: Show help message.
-- `-t string`: Ad hoc task to run on specified group (e.g., 'command').
+- `-t string`: Ad hoc task to run (e.g., 'command').
 - `-g string`: Group to run ad hoc task on.
 - `-local`: Run commands and scripts locally without SSH.
 
 ### Examples
+
+#### Running Locally Without a Configuration File
+
+Run an ad hoc task locally without specifying a configuration file or group:
+
+```bash
+./for -t "uptime" -local
+```
+
+Run a local playbook:
+
+```bash
+./for -playbook playbook.yaml -local
+```
 
 #### Running with a Configuration and Playbook File
 
@@ -59,7 +73,7 @@
 
    ```yaml
    inventory_file: "hosts.ini"
-   ssh_user: "root"
+   ssh_user: "yourusername"
    ssh_key_path: "/path/to/your/private/key"
    run_locally: false
    ```
@@ -106,49 +120,20 @@
    ./for -config config.yaml -playbook playbook.yaml
    ```
 
-#### Running Locally with a Configuration File
-
-To run the tasks locally without SSH, set `run_locally: true` in your configuration file:
-
-```yaml
-inventory_file: "hosts.ini"
-ssh_user: "yourusername"
-ssh_key_path: "/path/to/your/private/key"
-run_locally: true
-```
-
-Run the tool:
-
-```bash
-./for -config config.yaml -playbook playbook.yaml
-```
-
-#### Running Ad Hoc Commands
+#### Running Ad Hoc Commands with SSH
 
 Run an ad hoc task on the `webservers` group:
-
-```bash
-./for -config config.yaml -g webservers -t "uptime" -local
-```
-
-To run the ad hoc task remotely, without the `-local` flag:
 
 ```bash
 ./for -config config.yaml -g webservers -t "uptime"
 ```
 
-#### Running Ad Hoc Scripts
+#### Running Ad Hoc Scripts with SSH
 
 Run a script on the `webservers` group:
 
 ```bash
 ./for -config config.yaml -g webservers -t "/path/to/script.sh"
-```
-
-To run the script locally:
-
-```bash
-./for -config config.yaml -g webservers -t "/path/to/script.sh" -local
 ```
 
 ## Configuration File Structure
@@ -200,7 +185,7 @@ Example `services/example_service/tasks/main.yaml`:
 
 ### Prerequisites
 
-- Go 1.20 or later
+- Go 1.16 or later
 
 ### Building the Project
 
