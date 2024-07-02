@@ -7,7 +7,6 @@ import (
     "for/pkg/config"
     "for/pkg/inventory"
     "for/pkg/tasks"
-    "strings"
 )
 
 func main() {
