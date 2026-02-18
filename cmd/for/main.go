@@ -12,15 +12,24 @@ import (
 
 const defaultConfigPath = "./config.yaml"
 
+// version is set at build time via -ldflags="-X main.version=<tag>".
+var version = "dev"
+
 func main() {
 	configFile := flag.String("config", defaultConfigPath, "Path to the configuration file")
 	playbookFile := flag.String("playbook", "", "Path to the playbook file")
 	showHelp := flag.Bool("help", false, "Show help message")
+	showVersion := flag.Bool("version", false, "Print version and exit")
 	adHocTask := flag.String("t", "", "Ad hoc task to run (e.g., 'command')")
 	adHocGroup := flag.String("g", "", "Group to run ad hoc task on")
 	runLocalFlag := flag.Bool("local", false, "Run commands and scripts locally without SSH")
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("for %s\n", version)
+		os.Exit(0)
+	}
 
 	if *showHelp || (*adHocTask == "" && *playbookFile == "") {
 		flag.Usage()

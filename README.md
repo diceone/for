@@ -14,6 +14,19 @@
 - CLI flag `--local` takes precedence over the `run_locally` config-file setting.
 - Proper error propagation – non-zero exit codes on failures.
 
+## Releases
+
+Pre-built binaries for Linux, macOS and Windows (amd64 & arm64) are published automatically on every version tag via GitHub Actions.
+
+Download the latest release from the [Releases page](https://github.com/diceone/for/releases) or create a new release by pushing a tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+A `checksums.txt` (SHA-256) is included with every release.
+
 ## Installation
 
 ### Prerequisites
@@ -40,6 +53,7 @@ go build -o for ./cmd/for
 | `-t` | | Ad hoc task / command to run |
 | `-g` | | Host group for ad hoc tasks |
 | `-local` | `false` | Run locally without SSH (overrides `run_locally` in config) |
+| `-version` | | Print version and exit |
 | `-help` | | Show help message |
 
 ### Examples
