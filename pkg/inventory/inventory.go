@@ -6,8 +6,16 @@ import (
 	"strings"
 )
 
+// Host represents a single target host with optional per-host variables.
+type Host struct {
+	Address string
+	Vars    map[string]string
+}
+
+// Inventory holds parsed host groups and group-level variables.
 type Inventory struct {
-	Hosts map[string][]string
+	Hosts     map[string][]Host
+	GroupVars map[string]map[string]string
 }
 
 func LoadInventory(file string) (*Inventory, error) {
@@ -17,9 +25,15 @@ func LoadInventory(file string) (*Inventory, error) {
 	}
 	defer f.Close()
 
-	inv := &Inventory{Hosts: make(map[string][]string)}
+	inv := &Inventory{
+		Hosts:     make(map[string][]Host),
+		GroupVars: make(map[string]map[string]string),
+	}
+
 	scanner := bufio.NewScanner(f)
 	var group string
+	var isVarsSection bool
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		// Skip empty lines and comments
@@ -27,15 +41,42 @@ func LoadInventory(file string) (*Inventory, error) {
 			continue
 		}
 		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
-			group = line[1 : len(line)-1]
+			inner := line[1 : len(line)-1]
+			if strings.HasSuffix(inner, ":vars") {
+				group = strings.TrimSuffix(inner, ":vars")
+				isVarsSection = true
+			} else {
+				group = inner
+				isVarsSection = false
+			}
 		} else if group != "" {
-			inv.Hosts[group] = append(inv.Hosts[group], line)
+			if isVarsSection {
+				if inv.GroupVars[group] == nil {
+					inv.GroupVars[group] = make(map[string]string)
+				}
+				key, val, _ := strings.Cut(line, "=")
+				inv.GroupVars[group][strings.TrimSpace(key)] = strings.TrimSpace(val)
+			} else {
+				inv.Hosts[group] = append(inv.Hosts[group], parseHostLine(line))
+			}
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
+	return inv, scanner.Err()
+}
 
-	return inv, nil
+// parseHostLine parses a host entry such as:
+//
+//	192.168.1.10 ssh_port=2222 ansible_user=admin
+func parseHostLine(line string) Host {
+	parts := strings.Fields(line)
+	host := Host{
+		Address: parts[0],
+		Vars:    make(map[string]string),
+	}
+	for _, part := range parts[1:] {
+		key, val, _ := strings.Cut(part, "=")
+		host.Vars[strings.TrimSpace(key)] = strings.TrimSpace(val)
+	}
+	return host
 }
