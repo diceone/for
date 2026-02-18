@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds the application configuration loaded from config.yaml.

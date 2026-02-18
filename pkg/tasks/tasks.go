@@ -9,7 +9,7 @@ import (
 	"for/pkg/inventory"
 	"for/pkg/ssh"
 	"for/pkg/utils"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // DefaultServicesPath is the default base directory for service task files.
