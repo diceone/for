@@ -25,6 +25,12 @@ type Config struct {
 	Forks    int    `yaml:"forks"`
 	FailFast bool   `yaml:"fail_fast"`
 	LogFile  string `yaml:"log_file"`
+	// VaultPasswordFile is the path to a file containing the vault decryption password.
+	VaultPasswordFile string `yaml:"vault_password_file"`
+	// GatherFacts controls whether remote host facts are collected before running tasks.
+	GatherFacts bool `yaml:"gather_facts"`
+	// InventoryScript is the path to an executable that returns a dynamic JSON inventory.
+	InventoryScript string `yaml:"inventory_script"`
 }
 
 func LoadConfig(file string) (*Config, error) {
