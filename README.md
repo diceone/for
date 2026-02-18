@@ -7,153 +7,108 @@
 - Execute commands and scripts defined in a configuration file.
 - Run ad hoc commands and scripts on specified groups of hosts.
 - Secure SSH connections for remote command execution.
-- Support for grouping hosts in an inventory file.
-- Option to run commands and scripts locally.
+- Support for grouping hosts in an inventory file (comments and blank lines are ignored).
+- Option to run commands and scripts locally without SSH.
 - Service-based execution similar to Ansible roles.
+- Configurable SSH port and services base path.
+- CLI flag `--local` takes precedence over the `run_locally` config-file setting.
+- Proper error propagation – non-zero exit codes on failures.
 
 ## Installation
-
-### Build from Source
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/diceone/for.git
-   cd for
-   ```
-
-2. Initialize the Go module (if not already initialized):
-   ```bash
-   go mod init github.com/diceone/for
-   ```
-
-3. Download dependencies:
-   ```bash
-   go mod tidy
-   ```
-
-4. Build the binary:
-   ```bash
-   go build -o for ./cmd/for
-   ```
 
 ### Prerequisites
 
 - Go 1.20 or later
 
+### Build from Source
+
+```bash
+git clone https://github.com/diceone/for.git
+cd for
+go mod tidy
+go build -o for ./cmd/for
+```
+
 ## Usage
 
 ### Command-Line Options
 
-- `-config string`: Path to the configuration file (default: `./config.yaml`).
-- `-playbook string`: Path to the playbook file.
-- `-help`: Show help message.
-- `-t string`: Ad hoc task to run (e.g., 'command').
-- `-g string`: Group to run ad hoc task on.
-- `-local`: Run commands and scripts locally without SSH.
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-config` | `./config.yaml` | Path to the configuration file |
+| `-playbook` | | Path to the playbook file |
+| `-t` | | Ad hoc task / command to run |
+| `-g` | | Host group for ad hoc tasks |
+| `-local` | `false` | Run locally without SSH (overrides `run_locally` in config) |
+| `-help` | | Show help message |
 
 ### Examples
 
-#### Running Locally Without a Configuration File
-
-Run an ad hoc task locally without specifying a configuration file or group:
+#### Local ad hoc command (no config required)
 
 ```bash
-./for -t "uptime" -local
+./for -local -t "uptime"
 ```
 
-Run a local playbook:
+#### Local playbook (no config required)
 
 ```bash
-./for -playbook playbook.yaml -local
+./for -local -playbook playbook.yaml
 ```
 
-#### Running with a Configuration and Playbook File
+#### Playbook via SSH
 
-1. Create a configuration file `config.yaml`:
+```bash
+./for -config config.yaml -playbook playbook.yaml
+```
 
-   ```yaml
-   inventory_file: "hosts.ini"
-   ssh_user: "yourusername"
-   ssh_key_path: "/path/to/your/private/key"
-   run_locally: false
-   ```
-
-2. Create a playbook file `playbook.yaml`:
-
-   ```yaml
-   - name: Apply webserver service
-     hosts: webservers
-     services:
-       - service: example_service
-
-   - name: Apply dbserver service
-     hosts: dbservers
-     services:
-       - service: example_service
-   ```
-
-3. Create an inventory file `hosts.ini`:
-
-   ```ini
-   [webservers]
-   192.168.1.10
-   192.168.1.11
-
-   [dbservers]
-   192.168.1.20
-   192.168.1.21
-   ```
-
-4. Create a service file `services/example_service/tasks/main.yaml`:
-
-   ```yaml
-   - name: Update package index
-     command: sudo apt-get update
-
-   - name: Upgrade packages
-     command: sudo apt-get upgrade -y
-   ```
-
-5. Run the tool with the configuration and playbook file:
-
-   ```bash
-   ./for -config config.yaml -playbook playbook.yaml
-   ```
-
-#### Running Ad Hoc Commands with SSH
-
-Run an ad hoc task on the `webservers` group:
+#### Ad hoc command via SSH on a host group
 
 ```bash
 ./for -config config.yaml -g webservers -t "uptime"
 ```
 
-#### Running Ad Hoc Scripts with SSH
-
-Run a script on the `webservers` group:
+#### Ad hoc script via SSH on a host group
 
 ```bash
 ./for -config config.yaml -g webservers -t "/path/to/script.sh"
 ```
 
-## Configuration File Structure
+## Configuration File
 
-The configuration file should be in YAML format and include the path to the inventory file, SSH user details, SSH key path, and a flag to indicate if commands should be run locally.
-
-Example `config.yaml`:
+`config.yaml`:
 
 ```yaml
 inventory_file: "hosts.ini"
 ssh_user: "yourusername"
 ssh_key_path: "/path/to/your/private/key"
+# ssh_port defaults to 22 if omitted
+ssh_port: 22
+# services_path defaults to "services" if omitted
+services_path: "services"
+# run_locally can also be set here; the -local CLI flag takes precedence
 run_locally: false
 ```
 
-## Playbook File Structure
+## Inventory File
 
-The playbook file should be in YAML format and include the services to be applied to the specified hosts.
+`hosts.ini` follows a simple INI-style format. Blank lines and lines starting with `#` are ignored.
 
-Example `playbook.yaml`:
+```ini
+# Web servers
+[webservers]
+192.168.1.10
+192.168.1.11
+
+# Database servers
+[dbservers]
+192.168.1.20
+192.168.1.21
+```
+
+## Playbook File
+
+`playbook.yaml`:
 
 ```yaml
 - name: Apply webserver service
@@ -169,9 +124,9 @@ Example `playbook.yaml`:
 
 ## Service File Structure
 
-Services should be organized in directories under `services/` with a `tasks/main.yaml` file defining the tasks.
+Services live under `<services_path>/<service_name>/tasks/main.yaml`.
 
-Example `services/example_service/tasks/main.yaml`:
+`services/example_service/tasks/main.yaml`:
 
 ```yaml
 - name: Update package index
@@ -181,24 +136,27 @@ Example `services/example_service/tasks/main.yaml`:
   command: sudo apt-get upgrade -y
 ```
 
+## Project Structure
+
+```
+cmd/for/main.go          # Entry point & CLI flag parsing
+pkg/config/config.go     # Config loading (YAML)
+pkg/inventory/inventory.go # INI-style inventory parser
+pkg/ssh/ssh.go           # SSH client (command + script execution)
+pkg/tasks/tasks.go       # Playbook / ad hoc task runner
+pkg/utils/utils.go       # Helper utilities (e.g. IsScript)
+services/                # Service task definitions
+```
+
 ## Development
 
-### Prerequisites
+```bash
+# Build
+go build -o for ./cmd/for
 
-- Go 1.20 or later
-
-### Building the Project
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/diceone/for.git
-   cd for
-   ```
-
-2. Build the binary:
-   ```bash
-   go build -o for ./cmd/for
-   ```
+# Vet
+go vet ./...
+```
 
 ### Running Tests
 

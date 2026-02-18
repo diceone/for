@@ -1,92 +1,83 @@
 package ssh
 
 import (
-    "golang.org/x/crypto/ssh"
-    "io/ioutil"
-    "fmt"
+	"fmt"
+	"os"
+
+	cryptossh "golang.org/x/crypto/ssh"
 )
 
-func RunCommand(host, command, sshUser, sshKeyPath string) error {
-    key, err := ioutil.ReadFile(sshKeyPath)
-    if err != nil {
-        return err
-    }
+// newClient builds an authenticated SSH client for the given host and port.
+// TODO: Replace InsecureIgnoreHostKey with proper known_hosts verification.
+func newClient(host, sshUser, sshKeyPath string, port int) (*cryptossh.Client, error) {
+	key, err := os.ReadFile(sshKeyPath)
+	if err != nil {
+		return nil, err
+	}
 
-    signer, err := ssh.ParsePrivateKey(key)
-    if err != nil {
-        return err
-    }
+	signer, err := cryptossh.ParsePrivateKey(key)
+	if err != nil {
+		return nil, err
+	}
 
-    config := &ssh.ClientConfig{
-        User: sshUser,
-        Auth: []ssh.AuthMethod{
-            ssh.PublicKeys(signer),
-        },
-        HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-    }
+	cfg := &cryptossh.ClientConfig{
+		User: sshUser,
+		Auth: []cryptossh.AuthMethod{
+			cryptossh.PublicKeys(signer),
+		},
+		HostKeyCallback: cryptossh.InsecureIgnoreHostKey(), // #nosec G106 – TODO: use known_hosts
+	}
 
-    client, err := ssh.Dial("tcp", host+":22", config)
-    if err != nil {
-        return err
-    }
-    defer client.Close()
-
-    session, err := client.NewSession()
-    if err != nil {
-        return err
-    }
-    defer session.Close()
-
-    output, err := session.CombinedOutput(command)
-    if err != nil {
-        return err
-    }
-
-    fmt.Printf("Output from %s:\n%s\n", host, output)
-    return nil
+	return cryptossh.Dial("tcp", fmt.Sprintf("%s:%d", host, port), cfg)
 }
 
-func RunScript(host, scriptPath, sshUser, sshKeyPath string) error {
-    key, err := ioutil.ReadFile(sshKeyPath)
-    if err != nil {
-        return err
-    }
+// RunCommand executes a shell command on the remote host via SSH.
+func RunCommand(host, command, sshUser, sshKeyPath string, port int) error {
+	client, err := newClient(host, sshUser, sshKeyPath, port)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
 
-    signer, err := ssh.ParsePrivateKey(key)
-    if err != nil {
-        return err
-    }
+	session, err := client.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
 
-    config := &ssh.ClientConfig{
-        User: sshUser,
-        Auth: []ssh.AuthMethod{
-            ssh.PublicKeys(signer),
-        },
-        HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-    }
+	output, err := session.CombinedOutput(command)
+	if err != nil {
+		return err
+	}
 
-    client, err := ssh.Dial("tcp", host+":22", config)
-    if err != nil {
-        return err
-    }
-    defer client.Close()
+	fmt.Printf("Output from %s:\n%s\n", host, output)
+	return nil
+}
 
-    session, err := client.NewSession()
-    if err != nil {
-        return err
-    }
-    defer session.Close()
+// RunScript reads a local script file and executes its contents on the remote host via SSH.
+func RunScript(host, scriptPath, sshUser, sshKeyPath string, port int) error {
+	client, err := newClient(host, sshUser, sshKeyPath, port)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
 
-    script, err := ioutil.ReadFile(scriptPath)
-    if err != nil {
-        return err
-    }
+	session, err := client.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
 
-    output, err := session.CombinedOutput(string(script))
-    if err != nil {
-        return err
-    }
+	script, err := os.ReadFile(scriptPath)
+	if err != nil {
+		return err
+	}
 
-    fmt.Printf("Output from %s:\n%s\n", host, output)
-    return nil
+	output, err := session.CombinedOutput(string(script))
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Output from %s:\n%s\n", host, output)
+	return nil
 }
