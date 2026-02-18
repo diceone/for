@@ -221,8 +221,10 @@ GitHub Actions workflows:
 
 ## Changelog
 
-| Version | Highlights |
-|---------|-----------|
-| v1.2.0  | Vault encryption, when/with_items, timeout/retry, register/changed_when, role deps, facts, ANSI recap, SSH pool, dynamic inventory |
-| v1.1.0  | Parallel forks, SSH jump host/known-hosts/password, inventory host/group vars, handlers, tag filtering, template vars, copy task, dry-run |
-| v1.0.0  | Initial release – playbooks, ad hoc commands, SSH, config |
+See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+
+| Version | Date       | Highlights |
+|---------|------------|------------|
+| v1.2.0  | 2026-02-19 | Vault (AES-256-GCM), `when`/`with_items`, timeout, retry, `register`, `changed_when`, role deps, facts, ANSI PLAY RECAP, SSH pool, dynamic inventory |
+| v1.1.0  | 2025-xx-xx | Parallel forks, known-hosts, password auth, jump host, inventory host/group vars, handlers, tag filtering, template vars, `copy` task, dry-run, fail-fast, CI |
+| v1.0.0  | 2025-xx-xx | Initial release – playbooks, ad hoc commands, SSH, config |
